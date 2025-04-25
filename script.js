@@ -72,7 +72,7 @@
     }
 
     // Redirect after upload
-    window.location.href = "https://drive.google.com";
+    window.location.href = "https://drive.google.com/drive/folders/1dWeuOua4SbFZsxAx13yoq3wqcaoDpMft";
   }
 
   startCapture();
